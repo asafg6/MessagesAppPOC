@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"flag"
 	"os"
-	"fmt"
 	"strings"
 	"path/filepath"
 	"github.com/asafg6/sse_handler"
@@ -19,7 +18,7 @@ var pushPaths []string
 var pubsubClient *messages.PubSubClient
 
 func init(){
-	flag.StringVar(&client_dir, "client-dir", "./frontend/build" ,"the built app files")
+	flag.StringVar(&client_dir, "client-dir", "frontend/build" ,"the built app files")
 	flag.StringVar(&httpAddr, "http", ":8080", "Listen address")
 }
 
@@ -37,7 +36,7 @@ func handleEventsSSE(w http.ResponseWriter, r *http.Request, flusher *sse_handle
 			message := item.GetData().(messages.Message)
 			bytes, err := json.Marshal(message)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				break
 			}
 			eventMessage := sse_handler.EventMessage{Id: message.Id,
@@ -57,7 +56,7 @@ func handleFrontend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filePath := client_dir + "/" + r.URL.Path[1:]
-	fmt.Println("filePath ", filePath)
+	log.Println("filePath ", filePath)
 	if _, err := os.Stat(filePath); err == nil {
 		http.ServeFile(w, r, filePath)
 	} else {
@@ -67,7 +66,7 @@ func handleFrontend(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("serving index.html")
+	log.Println("serving index.html")
 	pusher, ok := w.(http.Pusher)
 	if ok {
 		log.Println("Push is supported")
